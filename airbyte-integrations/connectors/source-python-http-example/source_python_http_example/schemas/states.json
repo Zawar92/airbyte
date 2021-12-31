@@ -1,0 +1,61 @@
+{
+	"type": "object",
+	"required": [
+		"date",
+		"state_name",
+		"incidence_value",
+		"state_population",
+		"date_end_incidence",
+		"date_start_incidence"
+	],
+	"properties": {
+		"date": {
+			"type": ["null", "string"],
+			"default": "",
+			"examples": [
+				"2021-12-26T00:00:00"
+			],
+			"pattern": "^.*$"
+		},
+		"state_name": {
+			"type": ["null", "string"],
+			"default": "",
+			"examples": [
+				"Thuringen"
+			],
+			"pattern": "^.*$"
+		},
+		"incidence_value": {
+			"type": ["null", "number"],
+			"examples": [
+				559.088441527999
+			],
+			"default": 0.0
+		},
+		"state_population": {
+			"type": ["null", "integer"],
+			"examples": [
+				2120237
+			],
+			"default": 0
+		},
+		"date_end_incidence": {
+			"type": ["null", "string"],
+			"default": "",
+			"examples": [
+				"2021-12-26T00:00:00"
+			],
+			"pattern": "^.*$"
+		},
+		"date_start_incidence": {
+			"type": ["null", "string"],
+			"default": "",
+			"examples": [
+				"2021-12-20T00:00:00"
+			],
+			"pattern": "^.*$"
+		}
+	}
+}
+
+

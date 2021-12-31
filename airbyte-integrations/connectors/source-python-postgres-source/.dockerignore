@@ -1,0 +1,6 @@
+*
+!Dockerfile
+!main.py
+!source_python_postgres_source
+!setup.py
+!secrets
