@@ -26,6 +26,7 @@ RUN echo "Etc/UTC" > /etc/timezone
 
 # bash is installed for more convenient debugging.
 RUN apk --no-cache add bash
+RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev && pip install --no-cache-dir psycopg2
 
 # copy payload code only
 COPY main.py ./

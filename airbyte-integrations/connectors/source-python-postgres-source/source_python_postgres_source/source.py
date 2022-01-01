@@ -22,7 +22,7 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources import Source
 from . import connection_list
 import psycopg2 as psycopg2
-# from psycopg2.extensions import STATUS_BEGIN, STATUS_READY
+from psycopg2.extensions import STATUS_BEGIN, STATUS_READY
 
 
 class SourcePythonPostgresSource(Source):
@@ -86,7 +86,8 @@ class SourcePythonPostgresSource(Source):
         streams = []
         print(streams)
         stream_name = "states"  # Example
-        json_schema = {  # Example
+        json_schema = {
+            # Example
             "type": "object",
             "properties": {"date": {"type": "string"},
                            "state_name": {"type": "string"},
