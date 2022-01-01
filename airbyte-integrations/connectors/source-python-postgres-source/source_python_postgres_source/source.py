@@ -91,8 +91,8 @@ class SourcePythonPostgresSource(Source):
             "type": "object",
             "properties": {"date": {"type": "string"},
                            "state_name": {"type": "string"},
-                           "incidence_value": {"type": "float"},
-                           "state_population": {"type": "float"},
+                           "incidence_value": {"type": "number"},
+                           "state_population": {"type": "integer"},
                            "date_end_incidence": {"type": "string"},
                            "date_start_incidence": {"type": "string"}},
         }
