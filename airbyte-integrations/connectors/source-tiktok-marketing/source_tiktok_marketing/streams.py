@@ -444,11 +444,6 @@ class BasicReports(IncrementalTiktokStream, ABC):
         # For abnormal states
         if start_date > end_date:
             start_date = end_date
-        # print("start_date:", start_date)
-        # print("end_date:", end_date)
-        # print("pendulum:", pendulum.now())
-        # print("DEFAULT_START_DATE:", DEFAULT_START_DATE)
-        # print("DEFAULT_END_DATE:", DEFAULT_END_DATE)
 
         # Snapchat API only allows certain amount of days of data based on the reporting granularity
         if granularity == ReportGranularity.DAY:
