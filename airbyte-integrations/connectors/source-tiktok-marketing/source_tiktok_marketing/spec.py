@@ -10,7 +10,7 @@ from typing import Union
 from jsonschema import RefResolver
 from pydantic import BaseModel, Field
 
-from .streams import DEFAULT_START_DATE, ReportGranularity
+from .streams import DEFAULT_START_DATE, DEFAULT_END_DATE, ReportGranularity
 
 
 class OauthCredSpec(BaseModel):
@@ -76,7 +76,19 @@ class SourceTiktokMarketingSpec(BaseModel):
     )
 
     credentials: Union[OauthCredSpec, ProductionEnvSpec, SandboxEnvSpec] = Field(
-        title="Authorization Method", order=3, default={}, type="object"
+        title="Authorization Method", order=2, default={}, type="object"
+    )
+
+    end_date: str = Field(
+        title="End Date",
+        default=DEFAULT_END_DATE,
+        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        description=(
+            "The date until which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DD. "
+            "All data generated between start_date and this date will be replicated. "
+            "Not setting this option will result in always syncing the data till the current date."
+        ),
+        order=3,
     )
 
     @classmethod

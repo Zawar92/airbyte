@@ -23,6 +23,7 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 # TikTok Initial release date is September 2016
 DEFAULT_START_DATE = "2016-09-01"
+DEFAULT_END_DATE = str(datetime.now().date())
 NOT_AUDIENCE_METRICS = [
     "reach",
     "cost_per_1000_reached",
@@ -234,11 +235,14 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
             return Decimal(original_value)
         return original_value
 
-    def __init__(self, advertiser_id: int, app_id: int, secret: str, start_date: str, **kwargs):
+    def __init__(self, advertiser_id: int, app_id: int, secret: str, start_date: str, end_date: str, **kwargs):
         super().__init__(**kwargs)
         # convert a start date to TikTok format
         # example:  "2021-08-24" => "2021-08-24 00:00:00"
         self._start_time = pendulum.parse(start_date or DEFAULT_START_DATE).strftime("%Y-%m-%d 00:00:00")
+        # convert end date to TikTok format
+        # example:  "2021-08-24" => "2021-08-24 00:00:00"
+        self._end_time = pendulum.parse(end_date or DEFAULT_END_DATE).strftime("%Y-%m-%d 00:00:00")
 
         self._advertiser_storage = ListAdvertiserIdsStream(
             advertiser_id=advertiser_id, app_id=app_id, secret=secret, access_token=self.authenticator.token
@@ -400,6 +404,8 @@ class BasicReports(IncrementalTiktokStream, ABC):
     """Docs: https://ads.tiktok.com/marketing_api/docs?id=1707957200780290"""
 
     primary_key = None
+    end_date = None
+
 
     @property
     @abstractmethod
@@ -411,6 +417,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
     def __init__(self, report_granularity: ReportGranularity, **kwargs):
         super().__init__(**kwargs)
         self.report_granularity = report_granularity
+        BasicReports.end_date = self._end_time
 
     @property
     def cursor_field(self):
@@ -426,12 +433,22 @@ class BasicReports(IncrementalTiktokStream, ABC):
         to get the desired time range.
         Docs: https://ads.tiktok.com/marketing_api/docs?id=1714590313280513
         :param start_date - Timestamp from which we should start the report
+        :param end_date - Timestamp where we should end the report
         :param granularity - Level of granularity of the report; one of [HOUR, DAY, LIFETIME]
         :return Iterator for pair of start_date and end_date that can be used as request parameters
         """
         if isinstance(start_date, str):
             start_date = pendulum.parse(start_date)
-        end_date = pendulum.now()
+        end_date = pendulum.parse(BasicReports.end_date) if BasicReports.end_date else pendulum.now()
+
+        # For abnormal states
+        if start_date > end_date:
+            start_date = end_date
+        # print("start_date:", start_date)
+        # print("end_date:", end_date)
+        # print("pendulum:", pendulum.now())
+        # print("DEFAULT_START_DATE:", DEFAULT_START_DATE)
+        # print("DEFAULT_END_DATE:", DEFAULT_END_DATE)
 
         # Snapchat API only allows certain amount of days of data based on the reporting granularity
         if granularity == ReportGranularity.DAY:
@@ -522,6 +539,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
 
         for slice in super().stream_slices(**kwargs):
             for start_date, end_date in self._get_time_interval(stream_start, self.report_granularity):
+                # print("Date:", start_date, end_date)
                 slice["start_date"] = start_date.strftime("%Y-%m-%d")
                 slice["end_date"] = end_date.strftime("%Y-%m-%d")
                 self.logger.debug(
