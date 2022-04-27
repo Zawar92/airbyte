@@ -327,16 +327,20 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
     ) -> Iterable[Mapping]:
         """Additional data filtering"""
         state = self.select_cursor_field_value(stream_state) or self._start_time
-
+        # print("state:", state)
         for record in super().parse_response(response=response, stream_state=stream_state, **kwargs):
             updated = self.select_cursor_field_value(record, stream_slice)
             if updated is None:
+                # print("if updated is None")
                 yield record
             elif updated <= state:
+                # print("elif updated <= state")
                 continue
             else:
                 if not self.max_cursor_date or self.max_cursor_date < updated:
                     self.max_cursor_date = updated
+                    # print("if not self.max_cursor_date or self.max_cursor_date < updated:")
+                # print("state")
                 yield record
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -404,7 +408,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
     """Docs: https://ads.tiktok.com/marketing_api/docs?id=1707957200780290"""
 
     primary_key = None
-    end_date = None
+    # end_date = None
 
 
     @property
@@ -417,7 +421,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
     def __init__(self, report_granularity: ReportGranularity, **kwargs):
         super().__init__(**kwargs)
         self.report_granularity = report_granularity
-        BasicReports.end_date = self._end_time
+        # BasicReports.end_date = self._end_time
 
     @property
     def cursor_field(self):
@@ -428,7 +432,9 @@ class BasicReports(IncrementalTiktokStream, ABC):
         return []
 
     @staticmethod
-    def _get_time_interval(start_date: Union[datetime, str], granularity: ReportGranularity) -> Iterable[Tuple[datetime, datetime]]:
+    def _get_time_interval(start_date: Union[datetime, str],
+                           ending_date: Union[datetime, str],
+                           granularity: ReportGranularity) -> Iterable[Tuple[datetime, datetime]]:
         """Due to time range restrictions based on the level of granularity of reports, we have to chunk API calls in order
         to get the desired time range.
         Docs: https://ads.tiktok.com/marketing_api/docs?id=1714590313280513
@@ -439,7 +445,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
         """
         if isinstance(start_date, str):
             start_date = pendulum.parse(start_date)
-        end_date = pendulum.parse(BasicReports.end_date) if BasicReports.end_date else pendulum.now()
+        end_date = pendulum.parse(ending_date) if ending_date else pendulum.now()
 
         # For abnormal states
         if start_date > end_date:
@@ -531,10 +537,10 @@ class BasicReports(IncrementalTiktokStream, ABC):
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         stream_start = self.select_cursor_field_value(stream_state) or self._start_time
+        stream_end = self._end_time
 
         for slice in super().stream_slices(**kwargs):
-            for start_date, end_date in self._get_time_interval(stream_start, self.report_granularity):
-                # print("Date:", start_date, end_date)
+            for start_date, end_date in self._get_time_interval(stream_start, stream_end, self.report_granularity):
                 slice["start_date"] = start_date.strftime("%Y-%m-%d")
                 slice["end_date"] = end_date.strftime("%Y-%m-%d")
                 self.logger.debug(
