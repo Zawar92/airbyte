@@ -327,20 +327,15 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
     ) -> Iterable[Mapping]:
         """Additional data filtering"""
         state = self.select_cursor_field_value(stream_state) or self._start_time
-        # print("state:", state)
         for record in super().parse_response(response=response, stream_state=stream_state, **kwargs):
             updated = self.select_cursor_field_value(record, stream_slice)
             if updated is None:
-                # print("if updated is None")
                 yield record
             elif updated <= state:
-                # print("elif updated <= state")
                 continue
             else:
                 if not self.max_cursor_date or self.max_cursor_date < updated:
                     self.max_cursor_date = updated
-                    # print("if not self.max_cursor_date or self.max_cursor_date < updated:")
-                # print("state")
                 yield record
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -408,8 +403,6 @@ class BasicReports(IncrementalTiktokStream, ABC):
     """Docs: https://ads.tiktok.com/marketing_api/docs?id=1707957200780290"""
 
     primary_key = None
-    # end_date = None
-
 
     @property
     @abstractmethod
@@ -421,7 +414,6 @@ class BasicReports(IncrementalTiktokStream, ABC):
     def __init__(self, report_granularity: ReportGranularity, **kwargs):
         super().__init__(**kwargs)
         self.report_granularity = report_granularity
-        # BasicReports.end_date = self._end_time
 
     @property
     def cursor_field(self):
