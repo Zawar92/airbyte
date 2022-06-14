@@ -1,17 +1,17 @@
-import json
 import re
+import json
+from typing import Union
 
 from pydantic import BaseModel, Field
+
+DEFAULT_START_DATE = "2016-09-01"
 
 
 class OauthCredSpec(BaseModel):
     class Config:
-        title = "Login Access Token"
+        title = "Authorization Token"
 
-    # auth_type: str = Field(default="oauth2.0", const=True, order=0)
-    authmethod: str = Field(title="Authentication Method", description="Authentication Method is apikey.", airbyte_secret=True)
-    authparams: str = Field(title="Authentication Parameters", description="Api-Key", airbyte_secret=True)
-    app: str = Field(title="app", description="Api Version Is V4", airbyte_secret=True)
+    authorization: str = Field(title="Authorization", description="Bearer followed by space and session token generated in Login step", airbyte_secret=True)
 
 
 class SourceAdscannerTvSpec(BaseModel):

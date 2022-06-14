@@ -1,0 +1,1 @@
+{"$schema": "http://json-schema.org/schema#", "type": "array", "items": {"type": "object", "properties": {"value": {"type": "integer"}, "caption": {"type": "string"}}, "required": ["caption", "value"]}}
